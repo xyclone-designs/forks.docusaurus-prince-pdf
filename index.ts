@@ -1,42 +1,62 @@
-import { exec } from 'node:child_process'
-import { parseArgs } from 'node:util'
-import jsdom from 'jsdom'
+import * as NodeChildProcess from 'node:child_process'
+import * as NodeFS from 'node:fs'
+import * as NodePath from 'node:path'
+import * as NodeUtil from 'node:util'
+import { JSDOM } from 'jsdom'
 
 import { Args as PrinceArgs } from './args/prince';
 import { type Args as DocusaurusArgs } from './args/docusaurus';
+import { IndexConfig } from './index.config'
 
-import { type IndexConfig } from './index.config';
-import { file } from 'bun';
-
-// const browser = new Browser()
-const { JSDOM } = jsdom
 const buffer = new Set()
-
 const baseDir = import.meta.dir
-
-const { values } = parseArgs({
+const { values } = NodeUtil.parseArgs({
   args: Bun.argv,
-  options: <IndexConfig> { },
+  options: IndexConfig.options,
   strict: true,
   allowPositionals: true,
-})
+});
 
-const parsedUrl = new URL(values.pathUrl.replace(/\/$/, ''))
-const scope = parsedUrl.pathname
-const scopeName = scope !== '/' ? `-${scope.replace(/\/$/g, '').replace(/^\//g, '').replace(/\//g, '-')}` : ''
+console.log('Parsed arguments:', values);
 
-const princeArgs: PrinceArgs = {
-  css: {
-    styleSheet: `${baseDir}/print.css`,
-  },
-  input: {
-    inputList: `${values.pathDirectoryOutput}/${parsedUrl.hostname}${scopeName}.txt`,
-  },
-  pdfOutput: {
-    outputFile: `/config/${values.output || `${values.pathDirectoryOutput}/${parsedUrl.hostname}${scopeName}.pdf`}`
+const 
+  parsedUrl = new URL(values.pathUrl.replace(/\/$/, '')), 
+  scope = parsedUrl.pathname, 
+  scopeName = scope !== '/' ? `-${scope.replace(/\/$/g, '').replace(/^\//g, '').replace(/\//g, '-')}` : '';
+
+const
+  pathArgsPrince = NodePath.resolve(values.pathArgsPrince), 
+  pathArgsDocusaurus = NodePath.resolve(values.pathArgsDocusaurus);
+
+const 
+  contentPrince = values.pathArgsPrince ? NodeFS.readFileSync(pathArgsPrince, ({ encoding: 'utf-8' })) : require('index.config.prince.default.json'),
+  contentDocusaurus = values.pathArgsDocusaurus ? NodeFS.readFileSync(pathArgsDocusaurus, ({ encoding: 'utf-8' })) : require('index.config.docusaurus.default.json');
+    
+const 
+  princeArgs: PrinceArgs = JSON.parse(contentPrince), 
+  docusaurusArgs: DocusaurusArgs = JSON.parse(contentDocusaurus);
+
+princeArgs.css ??= {}; princeArgs.css.styleSheet ??= `${baseDir}/print.css`;
+princeArgs.input ??= {}; princeArgs.input.inputList ??= `${values.pathDirectoryOutput}/${parsedUrl.hostname}${scopeName}.txt`;
+princeArgs.pdfOutput ??= {}; princeArgs.pdfOutput.outputFile ??= `${values.output || `${values.pathDirectoryOutput}/${parsedUrl.hostname}${scopeName}.pdf`}`;
+
+if (docusaurusArgs.onlyPdf) { generatePdf() } 
+else {
+  if (values.pagesPrepend) {
+    values.pagesPrepend.split(',').forEach(item => {
+      const url = item.match(/^https?:\/\//) ? item : `${parsedUrl.origin}${scope}${item}`
+      buffer.add(url)
+      console.log(`Got link: ${url} [prepend]`)
+    })
   }
-};
-//const docusaurusArgs: DocusaurusArgs = {};
+
+  if (docusaurusArgs.includeIndex) {
+    console.log(`Got link: ${parsedUrl.origin}${scope} [index]`)
+    buffer.add(`${parsedUrl.origin}${scope}`)
+  }
+
+  requestPage(`${parsedUrl.origin}${scope}`)
+}
 
 async function generatePdf() {
   console.log(`Generating PDF ${princeArgs.pdfOutput?.outputFile}`)
@@ -48,13 +68,13 @@ async function generatePdf() {
       dockerBase = 'config', 
       dockerImage = values.dockerImagePrince && new RegExp(regex).test(values.dockerImagePrince) 
         ? values.dockerImagePrince
-        : "sparanoid/prince" 
+        : "sparanoid/prince"; 
     
-    princeArgs.css?.styleSheet ? `/${dockerBase}/${princeArgs.css?.styleSheet}` : null
-    princeArgs.input?.inputList ? `/${dockerBase}/${princeArgs.input?.inputList}` : null
-    princeArgs.pdfOutput?.outputFile ? `/${dockerBase}/${princeArgs.pdfOutput?.outputFile}` : null
+    princeArgs.css ??= {}; princeArgs.css.styleSheet = `/${dockerBase}/${princeArgs.css?.styleSheet}`;
+    princeArgs.input ??= {}; princeArgs.input.inputList = `/${dockerBase}/${princeArgs.input?.inputList}`;
+    princeArgs.pdfOutput ??= {}; princeArgs.pdfOutput.outputFile = `/${dockerBase}/${princeArgs.pdfOutput?.outputFile}`;
 
-    executeCommand(`docker run --rm -i -v "${baseDir}/:/${dockerBase}" ${dockerImage} ${princeArgs}`)
+    executeCommand(`docker run --rm -i -v "${baseDir}/:/${dockerBase}" ${dockerImage} ${PrinceArgs.toCommand(princeArgs)}`)
   }
 }
 
@@ -62,7 +82,7 @@ async function executeCommand(command: string) {
   await new Promise((resolve, reject) => {  
     console.log(`Executing command: ${command}`)
 
-    exec(command, (error, stdout, stderr) => {
+    NodeChildProcess.exec(command, (error, stdout, stderr) => {
       if (error) 
         return reject(error)
       
@@ -122,22 +142,4 @@ async function requestPage(url: string) {
   } catch (err) {
     console.error('Error fetching page:', err)
   }
-}
-
-if (values['pdf-only']) { generatePdf() } 
-else {
-  if (values.pagesPrepend) {
-    values.pagesPrepend.split(',').forEach(item => {
-      const url = item.match(/^https?:\/\//) ? item : `${parsedUrl.origin}${scope}${item}`
-      buffer.add(url)
-      console.log(`Got link: ${url} [prepend]`)
-    })
-  }
-
-  if (values['include-index']) {
-    console.log(`Got link: ${parsedUrl.origin}${scope} [index]`)
-    buffer.add(`${parsedUrl.origin}${scope}`)
-  }
-
-  requestPage(`${parsedUrl.origin}${scope}`)
 }

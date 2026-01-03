@@ -1,32 +1,49 @@
 import { type ParseArgsOptionsConfig } from "node:util";
 
-export interface IndexConfig extends ParseArgsOptionsConfig { 
+export interface IndexParseArgsOptionsConfig extends ParseArgsOptionsConfig { 
   dockerImagePrince: {
     type: 'string',
     default: 'sparanoid/prince',
-    short: 'princeDocker',
   },
 
   pathArgsDocusaurus: {
     type: 'string',
-    short: 'docusaurusArgs',
+    default: 'index.config.docusaurus.default.json',
   },
   pathArgsPrince: {
     type: 'string',
-    short: 'princeArgs',
+    default: 'index.config.prince.default.json',
   },
   pathUrl: {
-    type: 'string',
-    short: 'url',
-    default: 'https://dev.openbayes.com/docs',
-  },
+    type: 'string', },
 
-  pagesAppend: {
-    type: 'string',
-    default: '',
-  },
-  pagesPrepend: {
-    type: 'string',
-    default: '',
-  },
-}  
+  pagesAppend: { type: 'string', },
+  pagesPrepend: { type: 'string', },
+}
+
+export class IndexConfig {
+  static readonly options: IndexParseArgsOptionsConfig = {
+    dockerImagePrince: {
+      type: 'string',
+      default: 'yeslogic/prince',
+    },
+    pathArgsDocusaurus: {
+      type: 'string',
+      default: 'index.config.docusaurus.default.json',
+    },
+    pathArgsPrince: {
+      type: 'string',
+      default: 'index.config.prince.default.json',
+    },
+    pathUrl: {
+      type: 'string',
+      default: 'https://dev.openbayes.com/docs',
+    },
+    pagesAppend: {
+      type: 'string',
+    },
+    pagesPrepend: {
+      type: 'string'
+    },
+  } as IndexParseArgsOptionsConfig;
+}

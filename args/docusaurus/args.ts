@@ -1,6 +1,7 @@
 import { Flags } from "./flags";
 
 export interface Args {
+  includeIndex: boolean;
   onlyList: boolean;
   onlyPdf: boolean;
   directoryOutput: string;
