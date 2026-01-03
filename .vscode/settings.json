@@ -4,5 +4,15 @@
   "editor.codeActionsOnSave": {
     "source.fixAll.biome": "explicit",
     "source.organizeImports.biome": "explicit"
-  }
+  },
+  "chat.agent.enabled": false,
+  "cSpell.words": [
+    "capath",
+    "fileroot",
+    "ntlm",
+    "scanfonts",
+    "sparanoid",
+    "xinclude",
+    "yeslogic"
+  ]
 }

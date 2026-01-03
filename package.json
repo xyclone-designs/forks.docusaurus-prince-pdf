@@ -9,7 +9,8 @@
   "author": "OpenBayes",
   "license": "MIT",
   "scripts": {
-    "test": "bun run index.ts -u https://docusaurus.io/docs/",
+    "test": "bun run index.ts",
+    "test-docker": "bun run index.ts",
     "build": "bash run build.sh",
     "release": "bunx release-it",
     "lint": "biome check",
@@ -24,6 +25,7 @@
     }
   },
   "dependencies": {
+    "bun": "^1.3.5",
     "jsdom": "^26.1.0"
   },
   "packageManager": "bun@1.1.7",
