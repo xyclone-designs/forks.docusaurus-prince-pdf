@@ -1,5 +1,9 @@
 export const Flags = {
+  directoryOutput: "directoryOutput",
+  dockerImagePrince: "dockerImagePrince",
+  includeIndex: "includeIndex",
   onlyList: "onlyList",
   onlyPdf: "onlyPdf",
-  directoryOutput: "directoryOutput",
+  pagesAppend: "pagesAppend",
+  pagesPrepend: "pagesPrepend",
 } as const;

@@ -10,8 +10,6 @@
   "license": "MIT",
   "scripts": {
     "test": "bun run index.ts",
-    "test-docker-sparanoid": "bun run index.ts dockerImagePrince=sparanoid/prince",
-    "test-docker-yeslogic": "bun run index.ts dockerImagePrince=yeslogic/prince",
     "build": "bash run build.sh",
     "release": "bunx release-it",
     "lint": "biome check",
@@ -26,7 +24,9 @@
     }
   },
   "dependencies": {
+    "axios": "^1.13.2",
     "bun": "^1.3.5",
+    "cheerio": "^1.1.2",
     "jsdom": "^26.1.0"
   },
   "packageManager": "bun@1.1.7",

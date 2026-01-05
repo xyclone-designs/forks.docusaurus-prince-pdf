@@ -1,10 +1,15 @@
 import { Flags } from "./flags";
 
 export interface Args {
-  includeIndex: boolean;
-  onlyList: boolean;
-  onlyPdf: boolean;
-  directoryOutput: string;
+  directoryOutput: string,
+  dockerImagePrince: string,
+  includeIndex: false,
+  onlyList: false,
+  onlyPdf: false,
+  pagesAppend: false,
+  pagesAppendValues: string,
+  pagesPrepend: false,
+  pagesPrependValues: string,
 }
 
 export namespace Args { 

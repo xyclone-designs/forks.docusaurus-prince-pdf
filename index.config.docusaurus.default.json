@@ -1,6 +1,9 @@
 {
+  "directoryOutput": "./pdf",
+  "dockerImagePrince": "yeslogic/prince",
   "includeIndex": false,
   "onlyList": false,
   "onlyPdf": false,
-  "directoryOutput": "./pdf"
+  "pagesAppend": false,
+  "pagesPrepend": false
 }
