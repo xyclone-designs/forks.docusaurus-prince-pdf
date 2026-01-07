@@ -1,3 +1,3 @@
-import { type Args } from './args'
+import { Args } from './args'
 
-export { type Args };
+export { Args };

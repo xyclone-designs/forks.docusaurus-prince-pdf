@@ -44,7 +44,7 @@ export namespace Args {
           }
   
           // Scalar value
-          args.push(`${flag}="${value}"`);
+          args.push(`${flag}=${value}`);
         }
       }
   

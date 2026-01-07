@@ -103,9 +103,9 @@ export interface Args {
   }
 }
 
-export namespace Args {
+export namespace Args { 
   
-  export function toArgs(options: Args): string[] {
+  export function toArgs(options: Args, dockerBase?: string | undefined): string[] {
     const args: string[] = [];
 
     for (const [groupKey, group] of Object.entries(options)) {
@@ -122,6 +122,12 @@ export namespace Args {
 
         if (!flag) continue;
 
+        const isDocker: boolean = dockerBase && ( 
+          flag == Flags.css.styleSheet ||  
+          flag == Flags.input.inputList ||  
+          flag == Flags.pdfOutput.outputFile
+        );
+
         // Boolean flag
         if (typeof value === "boolean") {
           if (value) args.push(flag);
@@ -130,20 +136,19 @@ export namespace Args {
 
         // Repeatable flag
         if (Array.isArray(value)) {
-          value.forEach(v => args.push(`${flag}=${v}`));
-          continue;
+          value.forEach(v => {
+            args.push(!isDocker ? `${flag}=${v}` : `${flag}=/${dockerBase}/${v}`);
+          }); continue;
         }
 
         // Scalar value
-        args.push(`${flag}="${value}"`);
+        args.push(!isDocker ? `${flag}=${value}` : `${flag}=/${dockerBase}/${value}`);
       }
     }
 
     return args;
   }
-  
-  export function toCommand(options: Args, binary = "prince"): string { 
-    return [binary, ...toArgs(options)].join(" "); 
+  export function toCommandArgs(options: Args, dockerBase?: string | undefined): string { 
+    return toArgs(options, dockerBase).join(" "); 
   }
-
 }
